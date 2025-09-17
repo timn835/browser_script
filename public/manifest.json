@@ -1,0 +1,26 @@
+{
+	"name": "BrowserScript",
+	"description": "An awesome helper extension for browser automation & webscraping",
+	"version": "1.0.0",
+	"manifest_version": 3,
+	"icons": {
+		"16": "browser_script_icon.png",
+		"48": "browser_script_icon.png",
+		"128": "browser_script_icon.png"
+	},
+	"action": {
+		"default_title": "BrowserScript",
+		"default_popup": "popup.html"
+	},
+	"permissions": ["storage", "webRequest", "scripting"],
+	"host_permissions": ["<all_urls>"],
+	"background": {
+		"service_worker": "background.js"
+	},
+	"content_scripts": [
+		{
+			"matches": ["<all_urls>"],
+			"js": ["contentScript.js"]
+		}
+	]
+}
