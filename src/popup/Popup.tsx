@@ -105,7 +105,7 @@ export function Popup() {
 					</div>
 					<div className="w-full text-center">
 						<h2 className="font-semibold text-xl">Your flows:</h2>
-						<FlowTable flows={flows} />
+						<FlowTable flows={flows} setFlows={setFlows} />
 					</div>
 				</>
 			)}

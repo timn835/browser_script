@@ -8,6 +8,7 @@ import {
 	type RefObject,
 	type SetStateAction,
 } from "react";
+import { ActionTable } from "@/popup/ActionTable";
 
 type CreateFlowProps = {
 	activeFlowRef: RefObject<Flow>;
@@ -25,12 +26,7 @@ export function CreateFlow({
 	); // Actions of an active flow that may not have been stored yet
 
 	useEffect(() => {
-		console.log("CreateFlow useEffect running");
 		const handleMessage = (message: any) => {
-			console.log(
-				"CreateFlow handleMessage for action received running",
-				message
-			);
 			if (message.type === "ACTION_CAPTURED") {
 				const action: Action = message.payload;
 				activeFlowRef.current.actions.push(action);
@@ -61,11 +57,6 @@ export function CreateFlow({
 					return;
 				}
 				if (response?.status === "ok") {
-					console.log(
-						"CreateFlow handleSaveFlow",
-						response,
-						activeFlowRef.current
-					);
 					// Update ui
 					setFlows((prevFlows) => {
 						const newFlow = { ...activeFlowRef.current };
@@ -78,7 +69,6 @@ export function CreateFlow({
 						};
 						return [newFlow, ...prevFlows];
 					});
-
 					setIsCreatingFlow(false);
 				} else {
 					console.error("failed to create flow", response);
@@ -90,24 +80,17 @@ export function CreateFlow({
 	return (
 		<>
 			<div className="w-full text-center flex justify-center items-center gap-2">
-				<span className="w-48">
+				<h2 className="font-semibold text-xl">
 					{activeFlowRef.current.title
 						? activeFlowRef.current.title
 						: "No title"}
-				</span>
+				</h2>
+				<span className="w-48">Listening for actions...</span>
 				<Button className="w-48" onClick={handleSaveFlow}>
 					<SaveIcon /> FLOW
 				</Button>
 			</div>
-			<div>
-				{actions.map((action, i) => (
-					<div key={i}>
-						Type: {action.actionType}, CSS path:{" "}
-						{action.path ? action.path : "No path"}, Pre-Action url:{" "}
-						{action.preActionUrl}
-					</div>
-				))}
-			</div>
+			<ActionTable actions={actions} />
 		</>
 	);
 }
