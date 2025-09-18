@@ -23,9 +23,14 @@ import { useState, type Dispatch, type SetStateAction } from "react";
 type FlowTableProps = {
 	flows: Flow[];
 	setFlows: Dispatch<SetStateAction<Flow[]>>;
+	setShowingFlowId: Dispatch<SetStateAction<string>>;
 };
 
-export function FlowTable({ flows, setFlows }: FlowTableProps) {
+export function FlowTable({
+	flows,
+	setFlows,
+	setShowingFlowId,
+}: FlowTableProps) {
 	const [deleteIdx, setDeleteIdx] = useState<number | undefined>();
 
 	if (!flows.length) return <p>You have yet to create any flows</p>;
@@ -68,7 +73,9 @@ export function FlowTable({ flows, setFlows }: FlowTableProps) {
 								</Button>
 							</TableCell>
 							<TableCell className="text-center">
-								<Button className="w-12">
+								<Button
+									className="w-12"
+									onClick={() => setShowingFlowId(id)}>
 									<ArrowRightIcon />
 								</Button>
 							</TableCell>

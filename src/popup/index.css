@@ -116,5 +116,6 @@
 	}
 	body {
 		@apply bg-background text-foreground;
+		width: 600px;
 	}
 }

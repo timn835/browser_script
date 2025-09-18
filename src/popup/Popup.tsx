@@ -5,23 +5,22 @@ import { CreateFlow } from "@/popup/CreateFlow";
 import { FlowTable } from "@/popup/FlowTable";
 import { PlusIcon } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import { ShowFlow } from "@/popup/ShowFlow";
 
 export function Popup() {
 	const [isCreatingFlow, setIsCreatingFlow] = useState<boolean>(false);
+	const [flows, setFlows] = useState<Flow[]>([]);
+	const [showingFlowId, setShowingFlowId] = useState<string>("");
 	const activeFlowRef = useRef<Flow>({
 		id: "",
 		title: "",
 		timestamp: 0,
 		actions: [],
 	});
-	const [flows, setFlows] = useState<Flow[]>([]);
 
+	// This useEffect will make sure we render what is in storage & if we are already in listening mode
 	useEffect(() => {
-		console.log("Popup useEffect running");
-
-		// Get the flows from storage on component mount
 		chrome.storage.sync.get(["flows"], (result) => {
-			console.log("Popup useEffect fetched storage", result);
 			if (result.flows) setFlows(result.flows);
 		});
 
@@ -29,7 +28,6 @@ export function Popup() {
 		chrome.runtime.sendMessage(
 			{ type: "CHECK_ACTIVE_FLOW" },
 			(response) => {
-				console.log("Popup useEffect checked active flow", response);
 				if (chrome.runtime.lastError) {
 					console.error(
 						"Error checking active flow:",
@@ -61,7 +59,6 @@ export function Popup() {
 				payload: { ...activeFlowRef.current },
 			},
 			(response) => {
-				console.log("Popup created message", response);
 				if (chrome.runtime.lastError) {
 					console.error(
 						"Error initiating flow:",
@@ -87,6 +84,12 @@ export function Popup() {
 					setIsCreatingFlow={setIsCreatingFlow}
 					setFlows={setFlows}
 				/>
+			) : null}
+			{showingFlowId ? (
+				<ShowFlow
+					flow={flows.find(({ id }) => id === showingFlowId)}
+					setShowingFlowId={setShowingFlowId}
+				/>
 			) : (
 				<>
 					<div className="w-full text-center flex justify-center items-center gap-2">
@@ -105,7 +108,11 @@ export function Popup() {
 					</div>
 					<div className="w-full text-center">
 						<h2 className="font-semibold text-xl">Your flows:</h2>
-						<FlowTable flows={flows} setFlows={setFlows} />
+						<FlowTable
+							flows={flows}
+							setFlows={setFlows}
+							setShowingFlowId={setShowingFlowId}
+						/>
 					</div>
 				</>
 			)}
