@@ -17,15 +17,19 @@ export function Popup() {
 	const [flows, setFlows] = useState<Flow[]>([]);
 
 	useEffect(() => {
+		console.log("Popup useEffect running");
+
 		// Get the flows from storage on component mount
-		chrome.storage.sync.get("flows", (result) => {
-			setFlows(result.flows || []);
+		chrome.storage.sync.get(["flows"], (result) => {
+			console.log("Popup useEffect fetched storage", result);
+			if (result.flows) setFlows(result.flows);
 		});
 
 		// Get the activeFlow from background
 		chrome.runtime.sendMessage(
 			{ type: "CHECK_ACTIVE_FLOW" },
 			(response) => {
+				console.log("Popup useEffect checked active flow", response);
 				if (chrome.runtime.lastError) {
 					console.error(
 						"Error checking active flow:",
@@ -57,6 +61,7 @@ export function Popup() {
 				payload: { ...activeFlowRef.current },
 			},
 			(response) => {
+				console.log("Popup created message", response);
 				if (chrome.runtime.lastError) {
 					console.error(
 						"Error initiating flow:",

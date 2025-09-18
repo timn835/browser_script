@@ -22,6 +22,7 @@ chrome.runtime.onMessage.addListener((message, _sender, _sendResponse) => {
 document.addEventListener("click", (event) => {
 	// Check if listening
 	if (!listening) return;
+	console.log("click detected while listening!!!");
 
 	// Get the url on which the action is performed
 	const preActionUrl = window.location.href;

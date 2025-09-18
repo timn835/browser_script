@@ -33,7 +33,11 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
 			"background received CHECK_ACTIVE_FLOW message, activeFlow is:",
 			activeFlow
 		);
-		sendResponse({ status: "ok", activeFlow });
+		sendResponse({
+			status: "ok",
+			activeFlow: activeFlow ? { ...activeFlow } : null,
+		});
+		return;
 	}
 
 	// Initiate the flow
@@ -86,11 +90,18 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
 		if (activeFlow === null) return;
 
 		// Store the flow
+		console.log("storing the new flow", activeFlow);
 		chrome.storage.sync.get(["flows"], (res) => {
-			chrome.storage.sync.set({
-				flows: [activeFlow, ...res.flows],
-				activeFlow: null,
-			});
+			chrome.storage.sync.set(
+				{
+					flows: [{ ...activeFlow }, ...res.flows],
+					activeFlow: null,
+				},
+				() => {
+					// Set activeFlow to null
+					activeFlow = null;
+				}
+			);
 		});
 
 		// Send STOP_LISTENING to all tabs with content scripts

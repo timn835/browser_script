@@ -39,6 +39,7 @@ type FlowTableProps = {
 };
 
 export function FlowTable({ flows }: FlowTableProps) {
+	console.log("ffuuuuck", flows, flows[0]?.actions?.length);
 	if (!flows.length) return <p>You have yet to create any flows</p>;
 	return (
 		<Table>

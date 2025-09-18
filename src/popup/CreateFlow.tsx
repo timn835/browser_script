@@ -20,43 +20,17 @@ export function CreateFlow({
 	setIsCreatingFlow,
 	setFlows,
 }: CreateFlowProps) {
-	const [actions, setActions] = useState<Action[]>([]); // Actions of an active flow that may not have been stored yet
-
-	const handleSaveFlow = () => {
-		// Send message to background script to complete the active flow and to alert all tabs to stop listening for actions
-		chrome.runtime.sendMessage(
-			{
-				type: "COMPLETE_FLOW",
-			},
-			(response) => {
-				if (chrome.runtime.lastError) {
-					console.error("message error:", chrome.runtime.lastError);
-					return;
-				}
-				if (response?.status === "ok") {
-					// Update ui
-					setFlows((prevFlows) => [
-						{ ...activeFlowRef.current },
-						...prevFlows,
-					]);
-
-					// Re-initialize active flow
-					activeFlowRef.current = {
-						id: "",
-						title: "",
-						timestamp: 0,
-						actions: [],
-					};
-					setIsCreatingFlow(false);
-				} else {
-					console.error("failed to create flow", response);
-				}
-			}
-		);
-	};
+	const [actions, setActions] = useState<Action[]>(
+		activeFlowRef.current.actions
+	); // Actions of an active flow that may not have been stored yet
 
 	useEffect(() => {
+		console.log("CreateFlow useEffect running");
 		const handleMessage = (message: any) => {
+			console.log(
+				"CreateFlow handleMessage for action received running",
+				message
+			);
 			if (message.type === "ACTION_CAPTURED") {
 				const action: Action = message.payload;
 				activeFlowRef.current.actions.push(action);
@@ -74,6 +48,44 @@ export function CreateFlow({
 			chrome.runtime.onMessage.removeListener(handleMessage);
 		};
 	}, []);
+
+	const handleSaveFlow = () => {
+		// Send message to background script to complete the active flow and to alert all tabs to stop listening for actions
+		chrome.runtime.sendMessage(
+			{
+				type: "COMPLETE_FLOW",
+			},
+			(response) => {
+				if (chrome.runtime.lastError) {
+					console.error("message error:", chrome.runtime.lastError);
+					return;
+				}
+				if (response?.status === "ok") {
+					console.log(
+						"CreateFlow handleSaveFlow",
+						response,
+						activeFlowRef.current
+					);
+					// Update ui
+					setFlows((prevFlows) => {
+						const newFlow = { ...activeFlowRef.current };
+						// Re-initialize active flow
+						activeFlowRef.current = {
+							id: "",
+							title: "",
+							timestamp: 0,
+							actions: [],
+						};
+						return [newFlow, ...prevFlows];
+					});
+
+					setIsCreatingFlow(false);
+				} else {
+					console.error("failed to create flow", response);
+				}
+			}
+		);
+	};
 
 	return (
 		<>
