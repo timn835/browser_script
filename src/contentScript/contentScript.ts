@@ -3,23 +3,30 @@ console.log("hello from content script");
 // Initialize local listening variable
 let listening = false;
 
-// Get initial value
-chrome.storage.sync.get("listening", (res) => {
-	listening = res.listening === true;
-});
+// Listen for messages from the background script
+chrome.runtime.onMessage.addListener((message, _sender, _sendResponse) => {
+	if (!message || !message.type) return;
 
-// Watch for changes in listening
-chrome.storage.onChanged.addListener((changes, area) => {
-	if (area === "sync" && "listening" in changes) {
-		listening = changes.listening.newValue === true;
+	if (message.type === "START_LISTENING") {
+		listening = true;
+		console.log("Content script is now listening for clicks.");
+		return;
+	}
+	if (message.type === "STOP_LISTENING") {
+		listening = false;
+		console.log("Content has stopped listening for clicks.");
 	}
 });
 
+// Listen for "click" events and emit click actions
 document.addEventListener("click", (event) => {
 	// Check if listening
 	if (!listening) return;
 
-	// Walk back and determine the path of the node
+	// Get the url on which the action is performed
+	const preActionUrl = window.location.href;
+
+	// Walk back and determine the CSS path of the node
 	let selectorArr = []; // An array of strings containing the full path in reverse order
 	let el = event.target as Element | null;
 
@@ -41,18 +48,16 @@ document.addEventListener("click", (event) => {
 		el = el.parentNode instanceof Element ? el.parentNode : null;
 	}
 
-	const fullSelector = selectorArr.reverse().join(" > ");
-	console.log(fullSelector);
-
-	// Perform a sanity check
-	const found = document.querySelector(fullSelector);
-	if (found === event.target) console.log("all good brah");
-	else console.log("NOOOO!", found, event.target);
+	//Send message to background that an action was performed
+	chrome.runtime.sendMessage({
+		type: "ACTION_CAPTURED",
+		payload: {
+			actionType: "click",
+			preActionUrl,
+			path: selectorArr.reverse().join(" > "),
+		},
+	});
 });
-
-/**
-#reddit-recent-searches-partial-container > faceplate-tracker:nth-child(4) > faceplate-tracker > li > a > span.flex.items-center.gap-xs.min-w-0.shrink > span.flex.flex-col.justify-center.min-w-0.shrink.py-\[var\(--rem6\)\] > span.text-14 > div > div
- */
 
 // function simulateClick(el) {
 // 	if (!el) return;

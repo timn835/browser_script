@@ -1,26 +1,19 @@
-export type Action = "click" | "type" | "enter" | "navigate";
+export type ActionType = "click" | "type" | "enter" | "navigate";
 
-export type FlowStatus = "ready" | "listening" | "complete";
-
-export type ActionElement = {
-	element: Element; // HTML element
-	path: string; // CSS path
-};
-
-export type BrowserAction = {
-	action: Action;
-	element?: ActionElement;
+export type Action = {
+	actionType: ActionType;
+	preActionUrl: string; // Url of the tab before the action was performed
+	path?: string; // CSS path to the html element if the actionType is "click"
 };
 
 export type Flow = {
-	name: string;
-	date: string;
-	status: FlowStatus;
-	initialUrl: string;
+	id: string;
+	title: string;
+	timestamp: number;
 	actions: Action[];
 };
 
 export type BrowserScriptState = {
 	flows: Flow[];
-	listeningIdx?: number;
+	activeFlowId: string | null;
 };
