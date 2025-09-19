@@ -12,13 +12,7 @@
 		"default_title": "BrowserScript",
 		"default_popup": "popup.html"
 	},
-	"permissions": [
-		"tabs",
-		"storage",
-		"webRequest",
-		"scripting",
-		"nativeMessaging"
-	],
+	"permissions": ["tabs", "storage", "scripting", "nativeMessaging"],
 	"host_permissions": ["<all_urls>"],
 	"background": {
 		"service_worker": "background.js"

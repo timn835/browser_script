@@ -41,11 +41,7 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
 	}
 
 	// Initiate the flow
-	if (message.type === "INITIATE_FLOW") {
-		console.log(
-			"background received INITIATE_FLOW message, message payload is:",
-			message.payload
-		);
+	if (message.type === "CREATE_FLOW") {
 		const { id, timestamp, title } = message.payload;
 
 		// Initialize flow in memory
@@ -81,11 +77,7 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
 	}
 
 	// Complete and store the flow
-	if (message.type === "COMPLETE_FLOW") {
-		console.log(
-			"background received COMPLETE_FLOW message, activeFlow is:",
-			activeFlow
-		);
+	if (message.type === "FLOW_CREATED") {
 		// Check if we have a flow
 		if (activeFlow === null) return;
 
@@ -138,6 +130,34 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
 
 		// Add the action to the local activeFlow
 		activeFlow.actions.push(action);
+	}
+
+	if (message.type === "RUN_FLOW") {
+		const actions: Action[] = message.payload;
+		if (actions.length === 0) return;
+		chrome.tabs.create({ url: actions[0].preActionUrl }, (tab) => {
+			if (!tab.id) return;
+			// Wait for tab to load before injecting
+			chrome.tabs.onUpdated.addListener(function listener(tabId, info) {
+				if (tabId === tab.id && info.status === "complete") {
+					chrome.tabs.onUpdated.removeListener(listener);
+
+					chrome.scripting.executeScript(
+						{
+							target: { tabId: tab.id },
+							files: ["contentRunner.js"],
+						},
+						() => {
+							// Now send the flow into the tab
+							chrome.tabs.sendMessage(tab.id!, {
+								type: "EXECUTE_FLOW",
+								payload: actions,
+							});
+						}
+					);
+				}
+			});
+		});
 	}
 });
 

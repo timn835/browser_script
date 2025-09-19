@@ -55,7 +55,7 @@ export function Popup() {
 		// Send message to background script to initialize a flow and to alert all tabs to start listening for actions
 		chrome.runtime.sendMessage(
 			{
-				type: "INITIATE_FLOW",
+				type: "CREATE_FLOW",
 				payload: { ...activeFlowRef.current },
 			},
 			(response) => {
@@ -76,15 +76,19 @@ export function Popup() {
 		);
 	};
 
-	return (
-		<div className="w-full text-center space-y-4 p-4">
-			{isCreatingFlow ? (
+	if (isCreatingFlow)
+		return (
+			<div className="w-full text-center space-y-4 p-4">
 				<CreateFlow
 					activeFlowRef={activeFlowRef}
 					setIsCreatingFlow={setIsCreatingFlow}
 					setFlows={setFlows}
 				/>
-			) : null}
+			</div>
+		);
+
+	return (
+		<div className="w-full text-center space-y-4 p-4">
 			{showingFlowId ? (
 				<ShowFlow
 					flow={flows.find(({ id }) => id === showingFlowId)}

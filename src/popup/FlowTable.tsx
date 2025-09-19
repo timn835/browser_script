@@ -18,7 +18,8 @@ import {
 } from "@/components/ui/dialog";
 import type { Flow } from "@/lib/types";
 import { ArrowRightIcon, RefreshCcwIcon, Trash2Icon } from "lucide-react";
-import { useState, type Dispatch, type SetStateAction } from "react";
+import { useEffect, useState, type Dispatch, type SetStateAction } from "react";
+import { cn } from "@/lib/utils";
 
 type FlowTableProps = {
 	flows: Flow[];
@@ -32,8 +33,26 @@ export function FlowTable({
 	setShowingFlowId,
 }: FlowTableProps) {
 	const [deleteIdx, setDeleteIdx] = useState<number | undefined>();
+	const [spinningIdx, setSpinningIdx] = useState<number | undefined>();
+
+	useEffect(() => {
+		const handleMessage = (message: any) => {
+			if (message.type === "EXECUTION_COMPLETE") {
+				setSpinningIdx(undefined);
+			}
+		};
+
+		// Add listener
+		chrome.runtime.onMessage.addListener(handleMessage);
+
+		// Cleanup on unmount
+		return () => {
+			chrome.runtime.onMessage.removeListener(handleMessage);
+		};
+	}, []);
 
 	if (!flows.length) return <p>You have yet to create any flows</p>;
+
 	const handleDeleteFlow = (i: number) => {
 		const newFlows = flows.filter((_, j) => i !== j);
 		// Adjust chrome storage
@@ -42,6 +61,16 @@ export function FlowTable({
 		// Adjust popup ui
 		setFlows(newFlows);
 	};
+
+	const handleRunFlow = (idx: number) => {
+		// Send message to background that a flow needs to be executed
+		chrome.runtime.sendMessage({
+			type: "RUN_FLOW",
+			payload: flows[idx].actions,
+		});
+		setSpinningIdx(idx);
+	};
+
 	return (
 		<>
 			<Table>
@@ -68,8 +97,14 @@ export function FlowTable({
 								{actions.length}
 							</TableCell>
 							<TableCell className="text-center">
-								<Button className="w-12">
-									<RefreshCcwIcon />
+								<Button
+									className="w-12"
+									onClick={() => handleRunFlow(i)}>
+									<RefreshCcwIcon
+										className={cn({
+											"animate-spin": spinningIdx === i,
+										})}
+									/>
 								</Button>
 							</TableCell>
 							<TableCell className="text-center">

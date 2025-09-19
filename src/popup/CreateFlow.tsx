@@ -49,7 +49,7 @@ export function CreateFlow({
 		// Send message to background script to complete the active flow and to alert all tabs to stop listening for actions
 		chrome.runtime.sendMessage(
 			{
-				type: "COMPLETE_FLOW",
+				type: "FLOW_CREATED",
 			},
 			(response) => {
 				if (chrome.runtime.lastError) {

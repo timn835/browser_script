@@ -17,13 +17,15 @@ export default defineConfig({
 				popup: "/popup.html",
 				background: "src/background/background.ts",
 				contentScript: "src/contentScript/contentScript.ts",
+				contentRunner: "src/contentScript/contentRunner.ts",
 			},
 			output: {
 				entryFileNames: (chunk) => {
 					// Put background and content scripts at top level (not in assets/)
 					if (
 						chunk.name === "background" ||
-						chunk.name === "contentScript"
+						chunk.name === "contentScript" ||
+						chunk.name === "contentRunner"
 					) {
 						return "[name].js";
 					}
